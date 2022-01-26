@@ -1,34 +1,7 @@
+import { React, useState } from 'react';
+import { useRouter } from 'next/router';
 import { Box, Button, Text, TextField, Image } from '@skynexui/components';
 import appConfig from '../../config.json'
-
-function GlobalStyle() {
-    return (
-        <style global jsx>{`
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-      }
-      body {
-        font-family: 'Open Sans', sans-serif;
-      }
-      /* App fit Height */ 
-      html, body, #__next {
-        min-height: 100vh;
-        display: flex;
-        flex: 1;
-      }
-      #__next {
-        flex: 1;
-      }
-      #__next > * {
-        flex: 1;
-      }
-      /* ./App fit Height */ 
-    `}</style>
-    )
-}
 
 function Title(props) {
     const Tag = props.tag || 'h1'
@@ -60,17 +33,24 @@ function Title(props) {
 export default HomePage*/
 
 export default function PaginaInicial() {
-    const username = 'edsoncarlosdvp';
+    const [username, setUserName] = useState('edsoncarlosdvp');
+    const router = useRouter();
+
+    function handleText(e) {
+        setUserName(e.target.value);
+    }
+
+    function handleForm(e) {
+        e.preventDefault();
+        router.push('/chat');
+    }
 
     return (
         <>
-            <GlobalStyle />
             <Box
+                className="container"
                 styleSheet={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: appConfig.theme.colors.primary[500],
-                    backgroundImage: 'url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)',
-                    backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
+                    backgroundColor: appConfig.theme.colors.primary[500]
                 }}
             >
                 <Box
@@ -91,6 +71,7 @@ export default function PaginaInicial() {
                     {/* Formulário */}
                     <Box
                         as="form"
+                        onSubmit={handleForm}
                         styleSheet={{
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                             width: { xs: '100%', sm: '50%' }, textAlign: 'center', marginBottom: '32px',
@@ -102,6 +83,7 @@ export default function PaginaInicial() {
                         </Text>
 
                         <TextField
+                            onChange={handleText}
                             fullWidth
                             textFieldColors={{
                                 neutral: {
