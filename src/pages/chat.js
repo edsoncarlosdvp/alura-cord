@@ -3,31 +3,32 @@ import { React, useState } from 'react';
 import appConfig from '../../config.json';
 
 export default function ChatPage() {
-    const [menssage, setMenssage] = useState('')
-    const [listMenssages, setListMenssages] = useState([])
+    const [message, setMessage] = useState('')
+    const [listMessages, setListMessages] = useState([])
 
-    function handleMenssage(newMenssage) {
-        const menssage = {
-            id: listMenssages.length + 1,
-            from: 'vanessametonini',
-            text: newMenssage
-        }
-        setMenssage([
-            menssage,
-            ...listMenssages
-        ])
-        setMenssage('')
+    function handleText(e){
+        const value = e.target.value;
+        setMessage(value);
     }
 
-    function onSubmit(e) {
+    function sendMessage(e) {
         if (e.key === "Enter") {
             e.preventDefault()
-            setListMenssages([
-                ...listMenssages,
-                menssage
-            ])
-            setMenssage('')
+            handleMessage(message)
         }
+    }
+
+    function handleMessage(newMessage) {
+        const message = {
+            id: listMessages.length + 1,
+            from: 'vanessametonini',
+            text: newMessage
+        }
+        setListMessages([
+            message,
+            ...listMessages
+        ])
+        setMessage('')
     }
 
     return (
@@ -75,7 +76,7 @@ export default function ChatPage() {
                             </li>
                         )
                     })} */}
-                    <MessageList listMenssages={listMenssages} />
+                    <MessageList messagesSending={listMessages} />
 
                     <Box
                         as="form"
@@ -85,9 +86,9 @@ export default function ChatPage() {
                         }}
                     >
                         <TextField
-                            value={menssage}
-                            onChange={handleMenssage}
-                            onKeyPress={onSubmit}
+                            value={message}
+                            onChange={handleText}
+                            onKeyPress={sendMessage}
                             placeholder="Insira sua mensagem aqui..."
                             type="textarea"
                             styleSheet={{
@@ -140,10 +141,10 @@ function MessageList(props) {
                 marginBottom: '16px',
             }}
             >
-            {props.listMenssages.map((listMenssage) => {
+            {props.messagesSending.map((messageSendings) => {
                 return (
                     <Text
-                        key={listMenssage.id}
+                        key={messageSendings.id}
                         tag="li"
                         styleSheet={{
                             borderRadius: '5px',
@@ -170,7 +171,7 @@ function MessageList(props) {
                                 src={`https://github.com/vanessametonini.png`}
                             />
                             <Text tag="strong">
-                                {listMenssage.from}
+                                {messageSendings.from}
                             </Text>
                             <Text
                                 styleSheet={{
@@ -183,7 +184,7 @@ function MessageList(props) {
                                 {(new Date().toLocaleDateString())}
                             </Text>
                         </Box>
-                        {listMenssage.text}
+                        {messageSendings.text}
                     </Text>
                 )
             })}
