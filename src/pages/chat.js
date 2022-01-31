@@ -1,10 +1,26 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
-import { React, useState } from 'react';
+import { React, useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js'
 import appConfig from '../../config.json';
+
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzU5NjUwMywiZXhwIjoxOTU5MTcyNTAzfQ.ZtSwLF0afEUOAwqsTSe4n9OAE3DtU7OvTj1ikj1Mg88'
+const URL = 'https://nskysgxlxcjwkzsuffmm.supabase.co'
+const supabaseClient = createClient(URL, ANON_KEY)
 
 export default function ChatPage() {
     const [message, setMessage] = useState('')
     const [listMessages, setListMessages] = useState([])
+
+    useEffect(() => {
+        supabaseClient
+        .from('mensagens')
+        .select('*')
+        .order('id', { ascending: false })
+        .then(({data}) => {
+            console.log('Dados da consulta: ', data)
+            setListMessages(data)
+        })
+    }, [])
 
     function handleText(e){
         const value = e.target.value;
@@ -20,14 +36,21 @@ export default function ChatPage() {
 
     function handleMessage(newMessage) {
         const message = {
-            id: listMessages.length + 1,
+            // id: listMessages.length + 1,
             from: 'vanessametonini',
             text: newMessage
         }
-        setListMessages([
-            message,
-            ...listMessages
+        supabaseClient
+        .from('mensagens')
+        .insert([
+            message
         ])
+        .then(({data}) => {
+            setListMessages([
+                data[0],
+                ...listMessages
+            ])
+        })
         setMessage('')
     }
 
@@ -168,7 +191,7 @@ function MessageList(props) {
                                     display: 'inline-block',
                                     marginRight: '8px',
                                 }}
-                                src={`https://github.com/vanessametonini.png`}
+                                src={`https://github.com/${messageSendings.from}.png`}
                             />
                             <Text tag="strong">
                                 {messageSendings.from}
