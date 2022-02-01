@@ -42,7 +42,7 @@ export default function PaginaInicial() {
 
     function handleForm(e) {
         e.preventDefault();
-        router.push('/chat');
+        router.push(`/chat?username=${username}`);
     }
 
     return (

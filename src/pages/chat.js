@@ -1,25 +1,49 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import { React, useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js'
 import appConfig from '../../config.json';
+import { ButtonSendSticker } from '../components/buttonSendSticker';
 
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzU5NjUwMywiZXhwIjoxOTU5MTcyNTAzfQ.ZtSwLF0afEUOAwqsTSe4n9OAE3DtU7OvTj1ikj1Mg88'
 const URL = 'https://nskysgxlxcjwkzsuffmm.supabase.co'
 const supabaseClient = createClient(URL, ANON_KEY)
 
+function listenMessageRealTime(addMessage){
+    return supabaseClient
+        .from('mensagens')
+        .on('INSERT', (response) => {
+            addMessage(response.new)
+        })
+        .subscribe()
+  }
+
 export default function ChatPage() {
     const [message, setMessage] = useState('')
+    const router = useRouter();
+    const isLogged = router.query.username
     const [listMessages, setListMessages] = useState([])
 
     useEffect(() => {
         supabaseClient
-        .from('mensagens')
-        .select('*')
-        .order('id', { ascending: false })
-        .then(({data}) => {
-            console.log('Dados da consulta: ', data)
-            setListMessages(data)
+            .from('mensagens')
+            .select('*')
+            .order('id', { ascending: false })
+            .then(({data}) => {
+                console.log('Dados da consulta: ', data)
+                setListMessages(data)
+            })
+        const subscription = listenMessageRealTime((newMessage) => {
+            setListMessages((updateList) => {
+                return [
+                    newMessage,
+                    ...updateList,
+                ]
+            })
         })
+        return () => {
+            subscription.unsubscribe()
+        }
     }, [])
 
     function handleText(e){
@@ -37,7 +61,7 @@ export default function ChatPage() {
     function handleMessage(newMessage) {
         const message = {
             // id: listMessages.length + 1,
-            from: 'vanessametonini',
+            from: isLogged,
             text: newMessage
         }
         supabaseClient
@@ -46,12 +70,13 @@ export default function ChatPage() {
             message
         ])
         .then(({data}) => {
-            setListMessages([
-                data[0],
-                ...listMessages
-            ])
+            console.log(data)            
         })
         setMessage('')
+    }
+
+    function onClickSticker(sticker) {
+        handleMessage(`:sticker:${sticker}`)
     }
 
     return (
@@ -124,6 +149,9 @@ export default function ChatPage() {
                                 marginRight: '12px',
                                 color: appConfig.theme.colors.neutrals[200],
                             }}
+                        />
+                        <ButtonSendSticker 
+                            onStickerClick={onClickSticker}
                         />
                     </Box>
                 </Box>
@@ -207,7 +235,13 @@ function MessageList(props) {
                                 {(new Date().toLocaleDateString())}
                             </Text>
                         </Box>
-                        {messageSendings.text}
+                        {messageSendings.text.startsWith(':sticker:')
+                            ? (
+                                <Image src={messageSendings.text.replace(':sticker:', '')}/>
+                            ) : (
+                                messageSendings.text
+                            )
+                        }
                     </Text>
                 )
             })}
